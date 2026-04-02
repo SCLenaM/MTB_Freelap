@@ -33,7 +33,7 @@ with st.sidebar:
     )
 
 st.info(
-    "Die App ist jetzt auch fuer Streamlit Cloud vorbereitet. Nach dem Push auf GitHub kannst du `app.py` direkt als Cloud-App deployen."
+    "Die App laeuft jetzt in Streamlit Cloud. Dateien hochladen und die Exporte direkt im Browser herunterladen."
 )
 
 if uploaded_file is not None:

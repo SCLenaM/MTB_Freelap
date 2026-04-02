@@ -2,3 +2,5 @@
 .venv_local/
 __pycache__/
 *.pyc
+.DS_Store
+~$*.xlsx
