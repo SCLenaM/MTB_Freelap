@@ -200,12 +200,12 @@ render_styles()
 st.markdown(
     """
     <div class="hero-card">
-        <span class="hero-kicker">Freelap Cloud Studio</span>
+        <span class="hero-kicker">Freelap Analyseplattform</span>
         <h1 class="hero-title">Freelap Export Hub</h1>
         <p class="hero-copy">
-            Charge un export Freelap, associe les Rider IDs aux noms des athletes et
-            recupere directement les versions Excel et PDF dans une interface claire,
-            rapide et partageable avec toute l'equipe.
+            Freelap-Export hochladen, Rider IDs mit Athletennamen verknuepfen und
+            Excel- sowie PDF-Versionen direkt in einer klaren, schnellen und
+            teamtauglichen Oberflaeche herunterladen.
         </p>
     </div>
     """,
@@ -217,15 +217,15 @@ st.markdown(
     <div class="mini-grid">
         <div class="mini-card">
             <strong>1. Import</strong>
-            <span>Ajoute ton fichier Freelap CSV dans la barre laterale.</span>
+            <span>Freelap-CSV in der Seitenleiste hochladen.</span>
         </div>
         <div class="mini-card">
-            <strong>2. Matching</strong>
-            <span>Ajoute en option une liste d'athletes pour remplacer les Rider IDs.</span>
+            <strong>2. Zuordnung</strong>
+            <span>Optional eine Athletenliste hochladen, um Rider IDs durch Namen zu ersetzen.</span>
         </div>
         <div class="mini-card">
             <strong>3. Export</strong>
-            <span>Telecharge les syntheses Excel et les graphiques PDF en un clic.</span>
+            <span>Excel-Uebersichten und PDF-Grafiken mit einem Klick herunterladen.</span>
         </div>
     </div>
     """,
@@ -233,18 +233,18 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.markdown("### Import des fichiers")
-    st.caption("Charge les donnees de session puis, si besoin, une table de correspondance.")
+    st.markdown("### Datei-Upload")
+    st.caption("Zuerst die Session-Daten und bei Bedarf danach die Athletenliste hochladen.")
     uploaded_file = st.file_uploader("Freelap CSV", type=["csv"])
     mapping_file = st.file_uploader(
-        "Liste d'athletes",
+        "Athletenliste",
         type=["csv", "xlsx", "xls"],
-        help="Colonnes attendues: par exemple 'Rider ID' et 'Athlete Name'.",
+        help="Erwartete Spalten: zum Beispiel 'Rider ID' und 'Athlete Name'.",
     )
 
 st.markdown(
-    '<div class="info-band">L\'application est en ligne sur Streamlit Cloud. '
-    "Charge les fichiers et recupere les exports directement depuis le navigateur.</div>",
+    '<div class="info-band">Die Anwendung laeuft auf Streamlit Cloud. '
+    "Dateien hochladen und die Exporte direkt im Browser herunterladen.</div>",
     unsafe_allow_html=True,
 )
 
@@ -267,35 +267,35 @@ if uploaded_file is not None:
                 st.error(f"Die Athletenliste konnte nicht verarbeitet werden: {exc}")
 
         st.success(
-            f"{len(dataset.athletes)} athletes detectes, "
-            f"{sum(athlete.lap_count for athlete in dataset.athletes)} tours traites."
+            f"{len(dataset.athletes)} Athleten erkannt, "
+            f"{sum(athlete.lap_count for athlete in dataset.athletes)} Runden verarbeitet."
         )
 
         stats_col1, stats_col2, stats_col3 = st.columns(3)
-        stats_col1.metric("Athletes", len(dataset.athletes))
+        stats_col1.metric("Athleten", len(dataset.athletes))
         stats_col2.metric("Session", dataset.session_label)
-        stats_col3.metric("Date", dataset.session_date or "-")
+        stats_col3.metric("Datum", dataset.session_date or "-")
 
         if mapping_report is not None:
-            section_title("Matching des athletes")
+            section_title("Namens-Matching")
             match_col1, match_col2, match_col3 = st.columns(3)
-            match_col1.metric("IDs associees", mapping_report.matched)
-            match_col2.metric("Sans nom", len(mapping_report.unmatched_ids))
-            match_col3.metric("Non utilisees", len(mapping_report.unused_mapping_ids))
+            match_col1.metric("Zugeordnete IDs", mapping_report.matched)
+            match_col2.metric("Ohne Namen", len(mapping_report.unmatched_ids))
+            match_col3.metric("Nicht verwendet", len(mapping_report.unused_mapping_ids))
 
             if mapping_report.unmatched_ids:
                 st.warning(
-                    "Aucun nom trouve pour les Rider IDs suivantes: "
+                    "Keine Namen gefunden fuer folgende Rider IDs: "
                     + ", ".join(mapping_report.unmatched_ids)
                 )
 
         summary_rows = [
             {
-                "Athlete": athlete.display_name,
+                "Athlet": athlete.display_name,
                 "Rider ID": athlete.athlete_id,
-                "Blocs": len(athlete.blocks),
-                "Tours": athlete.lap_count,
-                "Blocs split": athlete.split_blocks,
+                "Bloecke": len(athlete.blocks),
+                "Runden": athlete.lap_count,
+                "Split-Bloecke": athlete.split_blocks,
             }
             for athlete in dataset.athletes
         ]
@@ -303,15 +303,15 @@ if uploaded_file is not None:
         preview_col, details_col = st.columns([1.35, 1], gap="large")
 
         with preview_col:
-            section_title("Vue d'ensemble")
+            section_title("Uebersicht")
             st.dataframe(summary_rows, use_container_width=True, hide_index=True)
 
         athlete_labels = {athlete.summary_label: athlete for athlete in dataset.athletes}
 
         with details_col:
-            section_title("Athlete selectionne")
+            section_title("Ausgewaehlter Athlet")
             selected_athlete_label = st.selectbox(
-                "Choisis un athlete",
+                "Athlet auswaehlen",
                 list(athlete_labels),
                 label_visibility="collapsed",
             )
@@ -328,7 +328,7 @@ if uploaded_file is not None:
                 unsafe_allow_html=True,
             )
 
-        section_title("Apercu des tours")
+        section_title("Rundenvorschau")
         st.dataframe(preview_rows(selected_athlete), use_container_width=True, hide_index=True)
 
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -337,7 +337,7 @@ if uploaded_file is not None:
         pdf_zip_per_chart = build_pdf_zip(dataset, export_mode="per_chart")
         selected_athlete_pdf = build_athlete_pdf(dataset, selected_athlete)
 
-        section_title("Exports")
+        section_title("Downloads")
         row1_col1, row1_col2 = st.columns(2, gap="large")
         row2_col1, row2_col2 = st.columns(2, gap="large")
 
@@ -345,14 +345,14 @@ if uploaded_file is not None:
             st.markdown(
                 """
                 <div class="download-card">
-                    <strong style="font-family:'Space Grotesk',sans-serif;">Workbook Excel</strong>
-                    <p>Un fichier complet avec vue d'ensemble, feuilles athletes et graphiques.</p>
+                    <strong style="font-family:'Space Grotesk',sans-serif;">Excel-Workbook</strong>
+                    <p>Komplette Datei mit Uebersicht, Athletenblaettern und Diagrammen.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
             st.download_button(
-                label="Telecharger le fichier Excel",
+                label="Excel-Datei herunterladen",
                 data=workbook_bytes,
                 file_name=f"freelap_export_{timestamp}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -363,14 +363,14 @@ if uploaded_file is not None:
             st.markdown(
                 f"""
                 <div class="download-card">
-                    <strong style="font-family:'Space Grotesk',sans-serif;">PDF individuel</strong>
-                    <p>Le dossier PDF complet de {selected_athlete.display_name} avec tous ses graphiques.</p>
+                    <strong style="font-family:'Space Grotesk',sans-serif;">Einzelnes PDF</strong>
+                    <p>Komplettes PDF von {selected_athlete.display_name} mit allen Diagrammen.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
             st.download_button(
-                label=f"Telecharger le PDF de {selected_athlete.display_name}",
+                label=f"PDF fuer {selected_athlete.display_name} herunterladen",
                 data=selected_athlete_pdf,
                 file_name=f"{selected_athlete.display_name}_{timestamp}.pdf",
                 mime="application/pdf",
@@ -381,14 +381,14 @@ if uploaded_file is not None:
             st.markdown(
                 """
                 <div class="download-card">
-                    <strong style="font-family:'Space Grotesk',sans-serif;">ZIP par athlete</strong>
-                    <p>Un PDF complet par athlete dans une archive unique.</p>
+                    <strong style="font-family:'Space Grotesk',sans-serif;">ZIP pro Athlet</strong>
+                    <p>Ein komplettes PDF pro Athlet in einer gemeinsamen ZIP-Datei.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
             st.download_button(
-                label="Telecharger le ZIP par athlete",
+                label="ZIP pro Athlet herunterladen",
                 data=pdf_zip_per_athlete,
                 file_name=f"freelap_pdfs_pro_athlet_{timestamp}.zip",
                 mime="application/zip",
@@ -399,14 +399,14 @@ if uploaded_file is not None:
             st.markdown(
                 """
                 <div class="download-card">
-                    <strong style="font-family:'Space Grotesk',sans-serif;">ZIP par graphique</strong>
-                    <p>Une archive avec les graphiques PDF separes pour chaque athlete.</p>
+                    <strong style="font-family:'Space Grotesk',sans-serif;">ZIP pro Grafik</strong>
+                    <p>Eine ZIP-Datei mit getrennten PDF-Grafiken fuer jeden Athleten.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
             st.download_button(
-                label="Telecharger le ZIP par graphique",
+                label="ZIP pro Grafik herunterladen",
                 data=pdf_zip_per_chart,
                 file_name=f"freelap_pdfs_pro_grafik_{timestamp}.zip",
                 mime="application/zip",
@@ -416,10 +416,10 @@ else:
     st.markdown(
         """
         <div class="download-card">
-            <strong style="font-family:'Space Grotesk',sans-serif;">Pret a demarrer</strong>
+            <strong style="font-family:'Space Grotesk',sans-serif;">Bereit zum Start</strong>
             <p>
-                Charge un fichier Freelap CSV dans la barre laterale pour afficher l'analyse,
-                les correspondances athletes et les exports telechargeables.
+                Freelap-CSV in der Seitenleiste hochladen, um Analyse,
+                Athletenzuordnung und herunterladbare Exporte anzuzeigen.
             </p>
         </div>
         """,
