@@ -18,22 +18,234 @@ from freelap_report import (
 
 st.set_page_config(page_title="Freelap Export Hub", layout="wide")
 
-st.title("Freelap Export Hub")
-st.write(
-    "Freelap-CSV hochladen, Rider IDs mit Athletennamen matchen und direkt Excel- sowie PDF-Exporte herunterladen."
+
+def render_styles() -> None:
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+
+        :root {
+            --bg-soft: #edf5f2;
+            --bg-card: rgba(255, 255, 255, 0.82);
+            --border-soft: rgba(11, 110, 79, 0.12);
+            --text-strong: #17313B;
+            --text-soft: #49626B;
+            --accent: #0B6E4F;
+            --accent-warm: #D97706;
+        }
+
+        .stApp {
+            background:
+                radial-gradient(circle at top left, rgba(217, 119, 6, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(11, 110, 79, 0.10), transparent 22%),
+                linear-gradient(180deg, #f8fcfb 0%, #eef6f3 100%);
+        }
+
+        .stApp, [data-testid="stSidebar"] {
+            font-family: "Source Sans 3", sans-serif;
+        }
+
+        h1, h2, h3 {
+            font-family: "Space Grotesk", sans-serif !important;
+            letter-spacing: -0.02em;
+            color: var(--text-strong);
+        }
+
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #eaf4f0 0%, #ddeee7 100%);
+            border-right: 1px solid rgba(11, 110, 79, 0.08);
+        }
+
+        [data-testid="stSidebar"] .stFileUploader {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(11, 110, 79, 0.10);
+            border-radius: 20px;
+            padding: 0.8rem;
+        }
+
+        [data-testid="stMetric"] {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: 0 10px 30px rgba(23, 49, 59, 0.06);
+        }
+
+        [data-testid="stDataFrame"], div[data-baseweb="select"] > div {
+            border-radius: 18px !important;
+        }
+
+        .hero-card {
+            padding: 2rem 2.2rem;
+            border-radius: 28px;
+            background:
+                linear-gradient(135deg, rgba(11, 110, 79, 0.95) 0%, rgba(23, 49, 59, 0.96) 100%);
+            color: white;
+            box-shadow: 0 22px 60px rgba(23, 49, 59, 0.18);
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-kicker {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 0.88rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .hero-title {
+            margin: 0.9rem 0 0.7rem 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-copy {
+            font-size: 1.15rem;
+            line-height: 1.5;
+            max-width: 56rem;
+            color: rgba(255, 255, 255, 0.88);
+            margin: 0;
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.9rem;
+            margin: 1rem 0 1.3rem 0;
+        }
+
+        .mini-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 20px;
+            padding: 1rem 1.1rem;
+            box-shadow: 0 12px 30px rgba(23, 49, 59, 0.05);
+        }
+
+        .mini-card strong {
+            display: block;
+            color: var(--text-strong);
+            margin-bottom: 0.2rem;
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        .mini-card span {
+            color: var(--text-soft);
+        }
+
+        .section-label {
+            margin-top: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-strong);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .info-band {
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.12), rgba(11, 110, 79, 0.10));
+            border: 1px solid rgba(217, 119, 6, 0.16);
+            color: var(--text-strong);
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .download-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            padding: 1rem;
+            box-shadow: 0 12px 28px rgba(23, 49, 59, 0.05);
+        }
+
+        .download-card p {
+            color: var(--text-soft);
+            margin-top: 0.1rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .stDownloadButton > button {
+            border-radius: 14px;
+            font-weight: 700;
+            min-height: 3rem;
+        }
+
+        @media (max-width: 900px) {
+            .mini-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-card {
+                padding: 1.4rem;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def section_title(label: str) -> None:
+    st.markdown(f'<div class="section-label">{label}</div>', unsafe_allow_html=True)
+
+
+render_styles()
+
+st.markdown(
+    """
+    <div class="hero-card">
+        <span class="hero-kicker">Freelap Cloud Studio</span>
+        <h1 class="hero-title">Freelap Export Hub</h1>
+        <p class="hero-copy">
+            Charge un export Freelap, associe les Rider IDs aux noms des athletes et
+            recupere directement les versions Excel et PDF dans une interface claire,
+            rapide et partageable avec toute l'equipe.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    """
+    <div class="mini-grid">
+        <div class="mini-card">
+            <strong>1. Import</strong>
+            <span>Ajoute ton fichier Freelap CSV dans la barre laterale.</span>
+        </div>
+        <div class="mini-card">
+            <strong>2. Matching</strong>
+            <span>Ajoute en option une liste d'athletes pour remplacer les Rider IDs.</span>
+        </div>
+        <div class="mini-card">
+            <strong>3. Export</strong>
+            <span>Telecharge les syntheses Excel et les graphiques PDF en un clic.</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 with st.sidebar:
-    st.header("Uploads")
+    st.markdown("### Import des fichiers")
+    st.caption("Charge les donnees de session puis, si besoin, une table de correspondance.")
     uploaded_file = st.file_uploader("Freelap CSV", type=["csv"])
     mapping_file = st.file_uploader(
-        "Athletenliste",
+        "Liste d'athletes",
         type=["csv", "xlsx", "xls"],
-        help="Erwartete Spalten: z. B. 'Rider ID' und 'Athlete Name'.",
+        help="Colonnes attendues: par exemple 'Rider ID' et 'Athlete Name'.",
     )
 
-st.info(
-    "Die App laeuft jetzt in Streamlit Cloud. Dateien hochladen und die Exporte direkt im Browser herunterladen."
+st.markdown(
+    '<div class="info-band">L\'application est en ligne sur Streamlit Cloud. '
+    "Charge les fichiers et recupere les exports directement depuis le navigateur.</div>",
+    unsafe_allow_html=True,
 )
 
 if uploaded_file is not None:
@@ -55,47 +267,68 @@ if uploaded_file is not None:
                 st.error(f"Die Athletenliste konnte nicht verarbeitet werden: {exc}")
 
         st.success(
-            f"{len(dataset.athletes)} Athleten erkannt, "
-            f"{sum(athlete.lap_count for athlete in dataset.athletes)} Runden verarbeitet."
+            f"{len(dataset.athletes)} athletes detectes, "
+            f"{sum(athlete.lap_count for athlete in dataset.athletes)} tours traites."
         )
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Athleten", len(dataset.athletes))
-        col2.metric("Session", dataset.session_label)
-        col3.metric("Datum", dataset.session_date or "-")
+        stats_col1, stats_col2, stats_col3 = st.columns(3)
+        stats_col1.metric("Athletes", len(dataset.athletes))
+        stats_col2.metric("Session", dataset.session_label)
+        stats_col3.metric("Date", dataset.session_date or "-")
 
         if mapping_report is not None:
-            st.subheader("Namens-Matching")
+            section_title("Matching des athletes")
             match_col1, match_col2, match_col3 = st.columns(3)
-            match_col1.metric("Gematchte Rider IDs", mapping_report.matched)
-            match_col2.metric("Nicht gematcht", len(mapping_report.unmatched_ids))
-            match_col3.metric("Nur in Athletenliste", len(mapping_report.unused_mapping_ids))
+            match_col1.metric("IDs associees", mapping_report.matched)
+            match_col2.metric("Sans nom", len(mapping_report.unmatched_ids))
+            match_col3.metric("Non utilisees", len(mapping_report.unused_mapping_ids))
 
             if mapping_report.unmatched_ids:
                 st.warning(
-                    "Keine Namen gefunden fuer folgende Rider IDs: "
+                    "Aucun nom trouve pour les Rider IDs suivantes: "
                     + ", ".join(mapping_report.unmatched_ids)
                 )
 
         summary_rows = [
             {
-                "Athlet": athlete.display_name,
+                "Athlete": athlete.display_name,
                 "Rider ID": athlete.athlete_id,
-                "Bloecke": len(athlete.blocks),
-                "Runden": athlete.lap_count,
-                "Split-Bloecke": athlete.split_blocks,
+                "Blocs": len(athlete.blocks),
+                "Tours": athlete.lap_count,
+                "Blocs split": athlete.split_blocks,
             }
             for athlete in dataset.athletes
         ]
-        st.subheader("Uebersicht")
-        st.dataframe(summary_rows, use_container_width=True, hide_index=True)
+
+        preview_col, details_col = st.columns([1.35, 1], gap="large")
+
+        with preview_col:
+            section_title("Vue d'ensemble")
+            st.dataframe(summary_rows, use_container_width=True, hide_index=True)
 
         athlete_labels = {athlete.summary_label: athlete for athlete in dataset.athletes}
-        selected_athlete_label = st.selectbox(
-            "Vorschau fuer Athlet",
-            list(athlete_labels),
-        )
-        selected_athlete = athlete_labels[selected_athlete_label]
+
+        with details_col:
+            section_title("Athlete selectionne")
+            selected_athlete_label = st.selectbox(
+                "Choisis un athlete",
+                list(athlete_labels),
+                label_visibility="collapsed",
+            )
+            selected_athlete = athlete_labels[selected_athlete_label]
+            st.markdown(
+                f"""
+                <div class="download-card">
+                    <strong style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;">
+                        {selected_athlete.display_name}
+                    </strong>
+                    <p>Rider ID: {selected_athlete.athlete_id}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+        section_title("Apercu des tours")
         st.dataframe(preview_rows(selected_athlete), use_container_width=True, hide_index=True)
 
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -104,37 +337,91 @@ if uploaded_file is not None:
         pdf_zip_per_chart = build_pdf_zip(dataset, export_mode="per_chart")
         selected_athlete_pdf = build_athlete_pdf(dataset, selected_athlete)
 
-        st.subheader("Downloads")
-        download_col1, download_col2 = st.columns(2)
-        download_col1.download_button(
-            label="Excel herunterladen",
-            data=workbook_bytes,
-            file_name=f"freelap_export_{timestamp}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True,
-        )
-        download_col2.download_button(
-            label=f"PDF fuer {selected_athlete.display_name}",
-            data=selected_athlete_pdf,
-            file_name=f"{selected_athlete.display_name}_{timestamp}.pdf",
-            mime="application/pdf",
-            use_container_width=True,
-        )
+        section_title("Exports")
+        row1_col1, row1_col2 = st.columns(2, gap="large")
+        row2_col1, row2_col2 = st.columns(2, gap="large")
 
-        zip_col1, zip_col2 = st.columns(2)
-        zip_col1.download_button(
-            label="ZIP: ein PDF pro Athlet",
-            data=pdf_zip_per_athlete,
-            file_name=f"freelap_pdfs_pro_athlet_{timestamp}.zip",
-            mime="application/zip",
-            use_container_width=True,
-        )
-        zip_col2.download_button(
-            label="ZIP: einzelne PDF-Charts pro Athlet",
-            data=pdf_zip_per_chart,
-            file_name=f"freelap_pdfs_pro_grafik_{timestamp}.zip",
-            mime="application/zip",
-            use_container_width=True,
-        )
+        with row1_col1:
+            st.markdown(
+                """
+                <div class="download-card">
+                    <strong style="font-family:'Space Grotesk',sans-serif;">Workbook Excel</strong>
+                    <p>Un fichier complet avec vue d'ensemble, feuilles athletes et graphiques.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.download_button(
+                label="Telecharger le fichier Excel",
+                data=workbook_bytes,
+                file_name=f"freelap_export_{timestamp}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+            )
+
+        with row1_col2:
+            st.markdown(
+                f"""
+                <div class="download-card">
+                    <strong style="font-family:'Space Grotesk',sans-serif;">PDF individuel</strong>
+                    <p>Le dossier PDF complet de {selected_athlete.display_name} avec tous ses graphiques.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.download_button(
+                label=f"Telecharger le PDF de {selected_athlete.display_name}",
+                data=selected_athlete_pdf,
+                file_name=f"{selected_athlete.display_name}_{timestamp}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+
+        with row2_col1:
+            st.markdown(
+                """
+                <div class="download-card">
+                    <strong style="font-family:'Space Grotesk',sans-serif;">ZIP par athlete</strong>
+                    <p>Un PDF complet par athlete dans une archive unique.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.download_button(
+                label="Telecharger le ZIP par athlete",
+                data=pdf_zip_per_athlete,
+                file_name=f"freelap_pdfs_pro_athlet_{timestamp}.zip",
+                mime="application/zip",
+                use_container_width=True,
+            )
+
+        with row2_col2:
+            st.markdown(
+                """
+                <div class="download-card">
+                    <strong style="font-family:'Space Grotesk',sans-serif;">ZIP par graphique</strong>
+                    <p>Une archive avec les graphiques PDF separes pour chaque athlete.</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.download_button(
+                label="Telecharger le ZIP par graphique",
+                data=pdf_zip_per_chart,
+                file_name=f"freelap_pdfs_pro_grafik_{timestamp}.zip",
+                mime="application/zip",
+                use_container_width=True,
+            )
 else:
-    st.info("Dateien hochladen, dann werden Vorschau, Namens-Matching und Exporte erzeugt.")
+    st.markdown(
+        """
+        <div class="download-card">
+            <strong style="font-family:'Space Grotesk',sans-serif;">Pret a demarrer</strong>
+            <p>
+                Charge un fichier Freelap CSV dans la barre laterale pour afficher l'analyse,
+                les correspondances athletes et les exports telechargeables.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
