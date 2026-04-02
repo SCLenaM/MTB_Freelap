@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 
 import streamlit as st
 
@@ -19,6 +20,12 @@ from freelap_report import (
 st.set_page_config(page_title="Freelap Export Hub", layout="wide")
 
 
+def load_logo_svg() -> str:
+    logo_path = Path(__file__).parent / "assets" / "swiss_cycling_logo.svg"
+    svg = logo_path.read_text()
+    return svg.replace("#000000", "#FFFFFF")
+
+
 def render_styles() -> None:
     st.markdown(
         """
@@ -28,17 +35,20 @@ def render_styles() -> None:
         :root {
             --bg-soft: #edf5f2;
             --bg-card: rgba(255, 255, 255, 0.82);
-            --border-soft: rgba(11, 110, 79, 0.12);
+            --border-soft: rgba(193, 39, 45, 0.12);
             --text-strong: #17313B;
             --text-soft: #49626B;
             --accent: #0B6E4F;
+            --accent-red: #C1272D;
+            --accent-red-dark: #8F1D23;
             --accent-warm: #D97706;
         }
 
         .stApp {
             background:
-                radial-gradient(circle at top left, rgba(217, 119, 6, 0.10), transparent 28%),
+                radial-gradient(circle at top left, rgba(193, 39, 45, 0.16), transparent 26%),
                 radial-gradient(circle at top right, rgba(11, 110, 79, 0.10), transparent 22%),
+                radial-gradient(circle at 80% 20%, rgba(217, 119, 6, 0.08), transparent 18%),
                 linear-gradient(180deg, #f8fcfb 0%, #eef6f3 100%);
         }
 
@@ -54,12 +64,12 @@ def render_styles() -> None:
 
         [data-testid="stSidebar"] {
             background: linear-gradient(180deg, #eaf4f0 0%, #ddeee7 100%);
-            border-right: 1px solid rgba(11, 110, 79, 0.08);
+            border-right: 1px solid rgba(193, 39, 45, 0.08);
         }
 
         [data-testid="stSidebar"] .stFileUploader {
             background: rgba(255, 255, 255, 0.65);
-            border: 1px solid rgba(11, 110, 79, 0.10);
+            border: 1px solid rgba(193, 39, 45, 0.10);
             border-radius: 20px;
             padding: 0.8rem;
         }
@@ -80,20 +90,46 @@ def render_styles() -> None:
             padding: 2rem 2.2rem;
             border-radius: 28px;
             background:
-                linear-gradient(135deg, rgba(11, 110, 79, 0.95) 0%, rgba(23, 49, 59, 0.96) 100%);
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.10), transparent 24%),
+                linear-gradient(135deg, rgba(193, 39, 45, 0.95) 0%, rgba(143, 29, 35, 0.96) 34%, rgba(23, 49, 59, 0.98) 100%);
             color: white;
             box-shadow: 0 22px 60px rgba(23, 49, 59, 0.18);
             margin-bottom: 1.2rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .hero-kicker {
             display: inline-block;
             padding: 0.3rem 0.7rem;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.14);
             font-size: 0.88rem;
             letter-spacing: 0.04em;
             text-transform: uppercase;
+        }
+
+        .hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.2rem;
+        }
+
+        .hero-logo {
+            min-width: 190px;
+            max-width: 230px;
+            padding: 0.7rem 0.9rem;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-logo svg {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         .hero-title {
@@ -125,6 +161,16 @@ def render_styles() -> None:
             border-radius: 20px;
             padding: 1rem 1.1rem;
             box-shadow: 0 12px 30px rgba(23, 49, 59, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mini-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 6px;
+            background: linear-gradient(180deg, var(--accent-red), #E26D5A);
         }
 
         .mini-card strong {
@@ -148,8 +194,8 @@ def render_styles() -> None:
         }
 
         .info-band {
-            background: linear-gradient(135deg, rgba(217, 119, 6, 0.12), rgba(11, 110, 79, 0.10));
-            border: 1px solid rgba(217, 119, 6, 0.16);
+            background: linear-gradient(135deg, rgba(193, 39, 45, 0.12), rgba(217, 119, 6, 0.08));
+            border: 1px solid rgba(193, 39, 45, 0.16);
             color: var(--text-strong);
             border-radius: 18px;
             padding: 1rem 1.1rem;
@@ -162,6 +208,7 @@ def render_styles() -> None:
             border-radius: 22px;
             padding: 1rem;
             box-shadow: 0 12px 28px rgba(23, 49, 59, 0.05);
+            position: relative;
         }
 
         .download-card p {
@@ -170,10 +217,32 @@ def render_styles() -> None:
             margin-bottom: 0.9rem;
         }
 
+        .download-card::after {
+            content: "";
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            top: 0;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-red), #F59E0B, var(--accent));
+        }
+
         .stDownloadButton > button {
             border-radius: 14px;
             font-weight: 700;
             min-height: 3rem;
+            border: 1px solid rgba(193, 39, 45, 0.18);
+        }
+
+        .stDownloadButton > button[kind="primary"] {
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
+            color: white;
+        }
+
+        .stDownloadButton > button:hover {
+            border-color: rgba(193, 39, 45, 0.35);
+            color: var(--accent-red-dark);
         }
 
         @media (max-width: 900px) {
@@ -183,6 +252,14 @@ def render_styles() -> None:
 
             .hero-card {
                 padding: 1.4rem;
+            }
+
+            .hero-top {
+                flex-direction: column;
+            }
+
+            .hero-logo {
+                max-width: 220px;
             }
         }
         </style>
@@ -196,17 +273,23 @@ def section_title(label: str) -> None:
 
 
 render_styles()
+logo_svg = load_logo_svg()
 
 st.markdown(
-    """
+    f"""
     <div class="hero-card">
-        <span class="hero-kicker">Freelap Analyseplattform</span>
-        <h1 class="hero-title">Freelap Export Hub</h1>
-        <p class="hero-copy">
-            Freelap-Export hochladen, Rider IDs mit Athletennamen verknuepfen und
-            Excel- sowie PDF-Versionen direkt in einer klaren, schnellen und
-            teamtauglichen Oberflaeche herunterladen.
-        </p>
+        <div class="hero-top">
+            <div>
+                <span class="hero-kicker">Freelap Analyseplattform</span>
+                <h1 class="hero-title">Freelap Export Hub</h1>
+                <p class="hero-copy">
+                    Freelap-Export hochladen, Rider IDs mit Athletennamen verknuepfen und
+                    Excel- sowie PDF-Versionen direkt in einer klaren, schnellen und
+                    teamtauglichen Oberflaeche herunterladen.
+                </p>
+            </div>
+            <div class="hero-logo">{logo_svg}</div>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
